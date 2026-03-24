@@ -1,75 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.3</version>
-        <relativePath/>
+        <version>4.0.4</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
-
     <groupId>org.example.tay</groupId>
-    <artifactId>springbkafkamongodbdemo</artifactId>
-    <version>2.0.0</version>
+    <artifactId>SpringB-Kafka-MongoDB-Demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <name>SpringB-Kafka-MongoDB-Demo</name>
-    <description>Task Management System — DDD + Reactive + EDA + Docker</description>
-
+    <description>SpringB-Kafka-MongoDB-Demo</description>
     <properties>
         <java.version>21</java.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
     </properties>
-
     <dependencies>
-
-        <!-- =============================================
-             Reactive Web (WebFlux) — replaces spring-boot-starter-web
-             Non-blocking, async REST API
-             ============================================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-
-        <!-- =============================================
-             Reactive MongoDB — replaces spring-boot-starter-data-mongodb
-             Non-blocking database access using Mono/Flux
-             ============================================= -->
+        <!--  =============================================
+                     Reactive MongoDB — replaces spring-boot-starter-data-mongodb
+                     Non-blocking database access using Mono/Flux
+                     =============================================  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
         </dependency>
-
-        <!-- =============================================
-             Apache Kafka — event streaming
-             ============================================= -->
+        <!--  =============================================
+                     Apache Kafka — event streaming
+                     =============================================  -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
-
-        <!-- =============================================
-             Validation — @NotBlank, @NotNull, @Size
-             ============================================= -->
+        <!--  =============================================
+                     Validation — @NotBlank, @NotNull, @Size
+                     =============================================  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-
-        <!-- =============================================
-             Lombok — @Data, @Builder, @Slf4j, etc.
-             ============================================= -->
+        <!--  =============================================
+                     Lombok — @Data, @Builder, @Slf4j, etc.
+                     =============================================  -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-
-        <!-- =============================================
-             MapStruct — auto-generate DTO <-> Entity mappers
-             ============================================= -->
+        <!--  =============================================
+                     MapStruct — auto-generate DTO <-> Entity mappers
+                     =============================================  -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
@@ -80,17 +78,14 @@
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
-
-        <!-- =============================================
-             Jackson JSR310 — serialize LocalDate / LocalDateTime
-             ============================================= -->
+        <!--  =============================================
+                     Jackson JSR310 — serialize LocalDate / LocalDateTime
+                     =============================================  -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
-
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -105,8 +100,7 @@
                     </excludes>
                 </configuration>
             </plugin>
-
-            <!-- MapStruct + Lombok annotation processor order -->
+            <!--  MapStruct + Lombok annotation processor order  -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

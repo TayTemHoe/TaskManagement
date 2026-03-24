@@ -30,12 +30,14 @@ services:
       - "8080:8080"
     environment:
       # Override localhost values from application.properties
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/taskdb
-      SPRING_DATA_MONGODB_DATABASE: taskdb
+      SPRING_MONGODB_URI: mongodb://mongodb:27017/taskDB
+      SPRING_MONGODB_DATABASE: taskDB
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
-      - mongodb
-      - kafka
+      mongodb:
+        condition: service_started
+      kafka:
+          condition: service_healthy
     restart: on-failure
     networks:
       - task-network
@@ -61,11 +63,17 @@ services:
   # resolve inside the Kafka container itself.
   # ============================================================
   kafka:
-    image: apache/kafka:3.7.0
+    image: apache/kafka:4.0.0
     container_name: kafka
     restart: always
     ports:
       - "9092:9092"
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
