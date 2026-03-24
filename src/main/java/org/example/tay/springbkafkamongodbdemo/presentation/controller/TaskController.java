@@ -7,7 +7,6 @@ import org.example.tay.springbkafkamongodbdemo.application.service.TaskService;
 import org.example.tay.springbkafkamongodbdemo.domain.event.TaskCreatedEvent;
 import org.example.tay.springbkafkamongodbdemo.domain.event.TaskDeletedEvent;
 import org.example.tay.springbkafkamongodbdemo.domain.event.TaskUpdatedEvent;
-import org.example.tay.springbkafkamongodbdemo.domain.model.TaskStatus;
 import org.example.tay.springbkafkamongodbdemo.shared.dto.TaskRequestDTO;
 import org.example.tay.springbkafkamongodbdemo.shared.dto.TaskResponseDTO;
 import org.example.tay.springbkafkamongodbdemo.shared.dto.TaskStatusUpdateDTO;

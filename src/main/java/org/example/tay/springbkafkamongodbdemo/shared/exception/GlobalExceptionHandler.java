@@ -5,9 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -49,9 +49,9 @@ public class GlobalExceptionHandler {
         return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(error));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleValidationException(
-            MethodArgumentNotValidException ex, ServerWebExchange exchange) {
+            WebExchangeBindException ex, ServerWebExchange exchange) {
         String message = ex.getBindingResult().getFieldErrors()
                 .stream()
                 .map(FieldError::getDefaultMessage)
@@ -83,6 +83,16 @@ public class GlobalExceptionHandler {
                 "An unexpected error occurred",
                 exchange.getRequest().getPath().value());
         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleIllegalState(
+            IllegalStateException ex, ServerWebExchange exchange) {
+        log.warn("Invalid state: {}", ex.getMessage());
+        ErrorResponse error = buildError(
+                HttpStatus.CONFLICT, "Conflict",
+                ex.getMessage(), exchange.getRequest().getPath().value());
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(error));
     }
 
     private ErrorResponse buildError(HttpStatus status, String error,

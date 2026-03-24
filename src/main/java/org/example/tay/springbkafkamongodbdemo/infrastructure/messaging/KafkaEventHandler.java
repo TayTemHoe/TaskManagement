@@ -7,6 +7,7 @@ import org.example.tay.springbkafkamongodbdemo.domain.event.TaskDeletedEvent;
 import org.example.tay.springbkafkamongodbdemo.domain.event.TaskUpdatedEvent;
 import org.example.tay.springbkafkamongodbdemo.shared.dto.TaskEventDTO;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public class KafkaEventHandler {
 
     private final KafkaProducerService kafkaProducerService;
 
+    @Async
     @EventListener
     public void handleTaskCreated(TaskCreatedEvent event) {
         log.info("Handling TaskCreatedEvent for task: {}", event.getTaskId());
@@ -55,6 +57,7 @@ public class KafkaEventHandler {
                 .build());
     }
 
+    @Async
     @EventListener
     public void handleTaskUpdated(TaskUpdatedEvent event) {
         log.info("Handling TaskUpdatedEvent for task: {}", event.getTaskId());
@@ -70,6 +73,7 @@ public class KafkaEventHandler {
                 .build());
     }
 
+    @Async
     @EventListener
     public void handleTaskDeleted(TaskDeletedEvent event) {
         log.info("Handling TaskDeletedEvent for task: {}", event.getTaskId());
