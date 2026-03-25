@@ -42,6 +42,5 @@ public class TaskEventDTO {
     private TaskStatus status;
     private TaskPriority priority;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dueDate;
 }

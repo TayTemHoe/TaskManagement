@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class KafkaConsumerService {
 
-    private final TaskService taskService;  // ← combined service
+    private final TaskService taskService;
 
     @KafkaListener(
             topics = "${kafka.topic.name}",
