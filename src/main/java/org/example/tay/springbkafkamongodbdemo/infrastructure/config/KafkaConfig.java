@@ -36,7 +36,6 @@ public class KafkaConfig {
     @Value("${kafka.topic.name}")
     private String taskEventsTopic;
 
-    // ── Topic ────────────────────────────────────────────────
     @Bean
     public NewTopic taskEventsTopic() {
         return TopicBuilder.name(taskEventsTopic)
@@ -45,7 +44,6 @@ public class KafkaConfig {
                 .build();
     }
 
-    // ── Producer ─────────────────────────────────────────────
     @Bean
     public ProducerFactory<String, TaskEventDTO> producerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -62,7 +60,6 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-    // ── Consumer ─────────────────────────────────────────────
     @Bean
     public ConsumerFactory<String, TaskEventDTO> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
