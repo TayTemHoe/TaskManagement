@@ -30,24 +30,9 @@ public class KafkaConsumerService {
         log.info("Received Kafka Event: {} for {}", event.getEventType(), event.getTaskId());
 
         switch (event.getEventType()) {
-            case "TASK_CREATED" -> taskService.handleCreate(event)
-                    .subscribe(
-                            null,
-                            err -> log.error("CONSUMER ERROR - Create [{}]: {}", event.getTaskId(), err.getMessage(), err)
-                    );
-
-            case "TASK_UPDATED" -> taskService.handleUpdate(event)
-                    .subscribe(
-                            null,
-                            err -> log.error("CONSUMER ERROR - Update [{}]: {}", event.getTaskId(), err.getMessage(), err)
-                    );
-
-            case "TASK_DELETED" -> taskService.handleDelete(event)
-                    .subscribe(
-                            null,
-                            err -> log.error("CONSUMER ERROR - Delete [{}]: {}", event.getTaskId(), err.getMessage(), err)
-                    );
-
+            case TASK_CREATED -> taskService.handleCreate(event).block();
+            case TASK_UPDATED -> taskService.handleUpdate(event).block();
+            case TASK_DELETED -> taskService.handleDelete(event).block();
             default -> log.warn("Unknown event type received: {}", event.getEventType());
         }
     }

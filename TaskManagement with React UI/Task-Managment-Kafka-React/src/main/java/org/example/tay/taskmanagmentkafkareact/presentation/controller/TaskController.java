@@ -41,11 +41,7 @@ public class TaskController {
             @Valid @RequestBody TaskRequestDTO request, Authentication authentication) {
 
         String username = extractUsername(authentication);
-        String rolePrefix = extractRolePrefix(authentication);
-        String encoded = rolePrefix + ":" + username;
-        String taskId = (request.getId() != null && !request.getId().isBlank())
-                ? request.getId()
-                : "TASK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String taskId = String.valueOf(taskService.generateTaskId());
 
         log.info("POST /api/tasks - Publishing TaskCreatedEvent for: {}", taskId);
 
@@ -57,7 +53,7 @@ public class TaskController {
                 request.getPriority(),
                 request.getDueDate(),
                 LocalDateTime.now(),
-                encoded
+                username
         ));
 
         return Mono.just(ResponseEntity
@@ -74,8 +70,6 @@ public class TaskController {
             Authentication authentication) {
 
         String username = extractUsername(authentication);
-        String rolePrefix = extractRolePrefix(authentication);
-        String encodedUser = rolePrefix + ":" + username;
 
         log.info("PUT /api/tasks/{} - Publishing TaskUpdatedEvent (full update)", id);
 
@@ -92,7 +86,7 @@ public class TaskController {
                             request.getPriority(),
                             request.getDueDate(),
                             LocalDateTime.now(),
-                            encodedUser
+                            username
                     ));
                     return Mono.just(ResponseEntity
                             .status(HttpStatus.ACCEPTED)
@@ -109,8 +103,6 @@ public class TaskController {
             Authentication authentication) {
 
         String username = extractUsername(authentication);
-        String rolePrefix = extractRolePrefix(authentication);
-        String encodedUser = rolePrefix + ":" + username;
         log.info("PATCH /api/tasks/{}/status - Publishing status-only update: {}", id, statusUpdate.getStatus());
 
         return taskService.getTaskById(id) // 1. Fetch task first
@@ -126,7 +118,7 @@ public class TaskController {
                             null,
                             null,
                             LocalDateTime.now(),
-                            encodedUser
+                            username
                     ));
                     return Mono.just(ResponseEntity
                             .status(HttpStatus.ACCEPTED)
@@ -141,13 +133,11 @@ public class TaskController {
              Authentication authentication) {
 
          String username = extractUsername(authentication);
-         String rolePrefix = extractRolePrefix(authentication);
-         String encodedUser = rolePrefix + ":" + username;
          return taskService.getTaskById(id) // 1. Fetch task first
                  .flatMap(taskService::validateOwnership)// 2. Validate while JWT is active
                  .flatMap(validTask -> {
                      // 3. Only publish if validation passed
-                     eventPublisher.publishEvent(new TaskDeletedEvent(id, id, LocalDateTime.now(),encodedUser));
+                     eventPublisher.publishEvent(new TaskDeletedEvent(id, id, LocalDateTime.now(),username));
                      return Mono.just(ResponseEntity.status(HttpStatus.ACCEPTED)
                              .body("Task deletion event published. Task ID: " + id));
                  });
@@ -180,16 +170,5 @@ public class TaskController {
       */
      private String extractUsername(Authentication authentication) {
          return authentication != null ? authentication.getName() : "anonymous";
-     }
-
-     /**
-      * Determines the role prefix for encoding in the Kafka event.
-      * Returns "ADMIN" if the user has ROLE_ADMIN, otherwise "USER".
-      */
-     private String extractRolePrefix(Authentication authentication) {
-         if (authentication == null) return "USER";
-         return authentication.getAuthorities().stream()
-                 .map(GrantedAuthority::getAuthority)
-                 .anyMatch("ROLE_ADMIN"::equals) ? "ADMIN" : "USER";
      }
 }

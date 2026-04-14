@@ -19,6 +19,7 @@ public interface TaskService {
     // ── VALIDATION operation (New) ───────────────────────────
     // This allows the Controller to check ownership BEFORE Kafka
     Mono<TaskResponseDTO> validateOwnership(TaskResponseDTO task);
+    Mono<String> generateTaskId();
 
     // ── COMMAND operations (Write) — triggered by Kafka Consumer ──
     Mono<Void> handleCreate(TaskEventDTO event);

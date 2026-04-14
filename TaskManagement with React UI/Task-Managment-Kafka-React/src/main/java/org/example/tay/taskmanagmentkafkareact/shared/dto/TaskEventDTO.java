@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.tay.taskmanagmentkafkareact.domain.model.TaskEventType;
 import org.example.tay.taskmanagmentkafkareact.domain.model.TaskPriority;
 import org.example.tay.taskmanagmentkafkareact.domain.model.TaskStatus;
 
@@ -26,7 +27,7 @@ import java.time.LocalDateTime;
 public class TaskEventDTO {
 
     //Event metadata
-    private String eventType;       // TASK_CREATED | TASK_UPDATED | TASK_DELETED
+    private TaskEventType eventType;       // TASK_CREATED | TASK_UPDATED | TASK_DELETED
     private LocalDateTime timestamp;
 
     //Full task payload (used by consumer to save/update/delete)

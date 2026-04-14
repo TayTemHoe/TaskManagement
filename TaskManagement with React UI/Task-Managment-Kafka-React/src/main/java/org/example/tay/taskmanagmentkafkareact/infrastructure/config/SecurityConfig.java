@@ -1,6 +1,7 @@
 package org.example.tay.taskmanagmentkafkareact.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+@Slf4j
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -67,6 +69,8 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(keycloakJwtAuthConverter))
                         // Return 401 JSON (not redirect) when token is missing/expired
                         .authenticationEntryPoint((exchange, ex) -> {
+                            log.warn("Unauthorized access attempt on {}: {}",
+                                    exchange.getRequest().getPath().value(), ex.getMessage());
                             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                             return exchange.getResponse().setComplete();
                         })

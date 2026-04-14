@@ -8,6 +8,7 @@ import org.example.tay.taskmanagmentkafkareact.domain.model.TaskStatus;
 import org.example.tay.taskmanagmentkafkareact.domain.repository.TaskRepository;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskEventDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskResponseDTO;
+import org.example.tay.taskmanagmentkafkareact.shared.exception.ConflictException;
 import org.example.tay.taskmanagmentkafkareact.shared.exception.TaskNotFoundException;
 import org.example.tay.taskmanagmentkafkareact.shared.mapper.TaskMapper;
 import org.springframework.security.access.AccessDeniedException;
@@ -63,18 +64,18 @@ public class TaskServiceImpl implements TaskService {
                 .flatMap(exists -> {
                     // Validation: Duplicate ID Check
                     if (exists) {
-                        return Mono.error(new IllegalArgumentException("Task ID already exists: " + event.getTaskId()));
+                        return Mono.error(new ConflictException("Task ID already exists: " + event.getTaskId()));
                     }
 
                     //Validation: Due Date Bounds (Past and 1-Year Limit)
                     LocalDate now = LocalDate.now();
                     if (event.getDueDate().isAfter(now.plusYears(1))) {
-                        return Mono.error(new IllegalArgumentException("Due date cannot be more than 1 year away"));
+                        return Mono.error(new ConflictException("Due date cannot be more than 1 year away"));
                     }
 
                     //Audit Metadata: Ensure creator information is present
                     if (event.getCreatedBy() == null || event.getCreatedBy().isBlank()) {
-                        return Mono.error(new IllegalArgumentException("Creator username (createdBy) is missing in event"));
+                        return Mono.error(new ConflictException("Creator username (createdBy) is missing in event"));
                     }
 
                     LocalDateTime timestamp = LocalDateTime.now();
@@ -89,8 +90,8 @@ public class TaskServiceImpl implements TaskService {
                             .dueDate(event.getDueDate())
                             .createdAt(timestamp)
                             .updatedAt(timestamp)
-                            .createdBy(parseUsername(event.getCreatedBy()))
-                            .updatedBy(parseUsername(event.getCreatedBy()))
+                            .createdBy(event.getCreatedBy())
+                            .updatedBy(event.getCreatedBy())
                             .build();
 
                     return taskRepository.save(task)
@@ -126,7 +127,7 @@ public class TaskServiceImpl implements TaskService {
                  .flatMap(existingTask -> {
                      // Validation: COMPLETED tasks are locked
                      if (existingTask.getStatus() == TaskStatus.COMPLETED) {
-                         return Mono.error(new IllegalStateException("COMPLETED tasks cannot be modified."));
+                         return Mono.error(new ConflictException("COMPLETED tasks cannot be modified."));
                      }
 
                      boolean isStatusOnly = (event.getTitle() == null || event.getTitle().isBlank());
@@ -151,7 +152,7 @@ public class TaskServiceImpl implements TaskService {
         return transitionCheck.then(Mono.defer(() -> {
             existingTask.setStatus(event.getStatus());
             existingTask.setUpdatedAt(LocalDateTime.now());
-            existingTask.setUpdatedBy(parseUsername(event.getUpdatedBy()));
+            existingTask.setUpdatedBy(event.getUpdatedBy());
             return taskRepository.save(existingTask);
         }));
     }
@@ -163,7 +164,7 @@ public class TaskServiceImpl implements TaskService {
 
         // Validation: IN_PROGRESS tasks can only have status changed
         if (existingTask.getStatus() == TaskStatus.IN_PROGRESS) {
-            return Mono.error(new IllegalStateException(
+            return Mono.error(new ConflictException(
                     "Task " + event.getTaskId() + " is IN_PROGRESS. " +
                     "Only status can be changed. " +
                     "Send a status-only update (leave title blank) to advance to COMPLETED."));
@@ -176,7 +177,7 @@ public class TaskServiceImpl implements TaskService {
 
             if (existingTask.getStatus() == TaskStatus.PENDING &&
                     event.getStatus() == TaskStatus.COMPLETED) {
-                return Mono.error(new IllegalArgumentException(
+                return Mono.error(new ConflictException(
                         "Cannot jump from PENDING to COMPLETED directly. " +
                         "Task must go through IN_PROGRESS first."));
             }
@@ -187,7 +188,7 @@ public class TaskServiceImpl implements TaskService {
         if (event.getDueDate() != null &&
                 existingTask.getDueDate() != null &&
                 event.getDueDate().isBefore(existingTask.getDueDate())) {
-            return Mono.error(new IllegalArgumentException(
+            return Mono.error(new ConflictException(
                     "Due date cannot be moved earlier than the original due date. " +
                     "Original: " + existingTask.getDueDate() +
                     ", Provided: " + event.getDueDate()));
@@ -206,7 +207,7 @@ public class TaskServiceImpl implements TaskService {
         }
 
         existingTask.setUpdatedAt(LocalDateTime.now());
-        existingTask.setUpdatedBy(parseUsername(event.getUpdatedBy()));
+        existingTask.setUpdatedBy(event.getUpdatedBy());
         return taskRepository.save(existingTask);
     }
 
@@ -260,12 +261,11 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Mono<Void> handleDelete(TaskEventDTO event) {
         return taskRepository.findById(event.getTaskId())
-                .switchIfEmpty(Mono.error(new TaskNotFoundException(event.getTaskId())))
                 .flatMap(task -> taskRepository.deleteById(task.getId()))
+                .switchIfEmpty(Mono.fromRunnable(() ->
+                        log.warn("Delete event for non-existent task: {} — treating as success",
+                                event.getTaskId())))
                 .doOnSuccess(v -> log.info("Task deleted: {}", event.getTaskId()))
-                .doOnError(err ->
-                        log.error("Failed to delete task {}: {}",
-                                event.getTaskId(), err.getMessage()))
                 .then();
     }
 
@@ -290,22 +290,24 @@ public class TaskServiceImpl implements TaskService {
                         .hasElements());
     }
 
-    private String parseUsername(String encoded) {
-        if (encoded == null) return "";
-        return encoded.contains(":") ? encoded.split(":", 2)[1] : encoded;
-    }
-
     @Override
     public Mono<TaskResponseDTO> validateOwnership(TaskResponseDTO existingTask) {
         return isAdmin().flatMap(admin ->
                 getCurrentUsername().flatMap(username -> {
                     // ADMIN can do anything; USER must be the creator
                     if (!admin && !existingTask.getCreatedBy().equals(username)) {
+                        log.warn("Access denied for user {} on task {}", username, existingTask.getId());
                         return Mono.error(new AccessDeniedException(
                                 "You do not have permission to modify task: " + existingTask.getId()));
                     }
                     return Mono.just(existingTask);
                 })
         );
+    }
+
+    @Override
+    public Mono<String> generateTaskId() {
+        return taskRepository.count()
+                .map(count -> String.format("TASK-%04d", count + 1));
     }
 }
