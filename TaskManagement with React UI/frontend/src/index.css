@@ -410,3 +410,26 @@ input, textarea, select {
   margin-bottom: 24px;
 }
 
+/* ============================================================
+   FORM STYLES — used in CreateTaskPage and UpdateTaskPage
+   ============================================================ */
+
+.form-page__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+}
+
+.form-page__subtitle {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.form-page__subtitle--warn {
+  color: #d97706;
+  font-weight: 600;
+}
+

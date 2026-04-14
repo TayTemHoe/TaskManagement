@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './TaskForm.module.css';
+import './TaskForm.css';
 
 export default function TaskForm({
   initialValues = {},

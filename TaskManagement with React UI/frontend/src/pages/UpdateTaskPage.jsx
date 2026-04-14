@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getTaskById, updateTask } from '../services/taskService';
 import TaskForm from '../components/TaskForm';
-import '../components/TaskForm.module.css';
 
 export default function UpdateTaskPage() {
   const { id } = useParams();

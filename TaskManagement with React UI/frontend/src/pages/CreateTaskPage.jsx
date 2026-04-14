@@ -1,16 +1,15 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { createTask } from '../services/taskService';
-import TaskForm from '../components/TaskForm';
-import '../components/TaskForm.module.css';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { createTask } from "../services/taskService";
+import TaskForm from "../components/TaskForm";
 
 export default function CreateTaskPage() {
   const navigate = useNavigate();
   const { token, updateToken } = useAuth();
 
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState(null);
+  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
   async function handleSubmit(formData) {
@@ -20,7 +19,7 @@ export default function CreateTaskPage() {
       await updateToken(30);
       await createTask(token, formData);
       setSuccess(true);
-      setTimeout(() => navigate('/tasks'), 1500);
+      setTimeout(() => navigate("/tasks"), 1500);
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -29,7 +28,7 @@ export default function CreateTaskPage() {
 
   return (
     <div className="page page--narrow">
-      <button className="back-btn" onClick={() => navigate('/tasks')}>
+      <button className="back-btn" onClick={() => navigate("/tasks")}>
         ← Back to Tasks
       </button>
 
@@ -56,7 +55,7 @@ export default function CreateTaskPage() {
             onSubmit={handleSubmit}
             submitLabel="Create Task"
             loading={loading}
-            initialValues={{ status: 'PENDING' }}
+            initialValues={{ status: "PENDING" }}
           />
         )}
       </div>

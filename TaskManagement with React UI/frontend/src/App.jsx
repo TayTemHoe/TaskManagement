@@ -34,7 +34,7 @@ export default function App() {
       <Navbar/>
       <Routes>
         <Route path="/login"   element={<LoginPage/>}/>
-        <Route path="/unauthorize" element={<UnauthorizedPage/>} />
+        <Route path="/unauthorized" element={<UnauthorizedPage/>} />
 
         <Route path="/tasks"         element={<PrivateRoute><TaskListPage /></PrivateRoute>} />
         <Route path="/tasks/new"     element={<PrivateRoute><CreateTaskPage /></PrivateRoute>} />
