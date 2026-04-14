@@ -8,7 +8,6 @@ import org.example.tay.taskmanagmentkafkareact.domain.event.TaskUpdatedEvent;
 import org.example.tay.taskmanagmentkafkareact.domain.model.TaskEventType;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskEventDTO;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

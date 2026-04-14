@@ -28,7 +28,7 @@ public class SecurityConfig {
 
     private final KeycloakJwtAuthConverter keycloakJwtAuthConverter;
 
-    @Value("${cors.allowed-origins:http://localhost:3000}")
+    @Value("${cors.allowed-origins}")
     private String allowedOrigins;
 
     @Bean

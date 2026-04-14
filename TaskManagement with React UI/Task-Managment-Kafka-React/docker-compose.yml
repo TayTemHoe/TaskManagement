@@ -109,6 +109,26 @@ services:
     networks:
       - task-network
 
+  task-frontend:
+    build:
+      context: ../task-frontend
+      dockerfile: Dockerfile
+      args:
+        # These become window.location-relative URLs in the built JS bundle
+        VITE_KEYCLOAK_URL: http://localhost:8180
+        VITE_KEYCLOAK_REALM: internship-task-realm
+        VITE_KEYCLOAK_CLIENT_ID: task-frontend
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: task-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+      - keycloak
+    restart: on-failure
+    networks:
+      - task-network
+
 volumes:
   mongo_data:
 

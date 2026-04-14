@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableReactiveMongoRepositories
 @EnableReactiveMongoAuditing
-@EnableAsync
 public class TaskManagmentKafkaReactApplication {
 
     public static void main(String[] args) {

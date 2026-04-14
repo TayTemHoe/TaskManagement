@@ -42,12 +42,10 @@ public class GlobalExceptionHandler {
     }
 
     // ── 409 Conflict — business rule violation ───────────────────
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler(ConflictException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleConflict(
-            IllegalArgumentException ex, ServerWebExchange exchange) {
-        log.warn("Business rule violation: {}", ex.getMessage());
-        return Mono.just(ResponseEntity
-                .status(HttpStatus.CONFLICT)
+            ConflictException ex, ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(buildError(HttpStatus.CONFLICT, "Conflict",
                         ex.getMessage(), exchange.getRequest().getPath().value())));
     }

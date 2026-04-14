@@ -41,24 +41,25 @@ public class TaskController {
             @Valid @RequestBody TaskRequestDTO request, Authentication authentication) {
 
         String username = extractUsername(authentication);
-        String taskId = String.valueOf(taskService.generateTaskId());
+            log.info("POST /api/tasks - Publishing TaskCreatedEvent for user: {}", username);
 
-        log.info("POST /api/tasks - Publishing TaskCreatedEvent for: {}", taskId);
-
-        eventPublisher.publishEvent(new TaskCreatedEvent(
-                taskId,
-                request.getTitle(),
-                request.getDescription(),
-                request.getStatus(),
-                request.getPriority(),
-                request.getDueDate(),
-                LocalDateTime.now(),
-                username
-        ));
-
-        return Mono.just(ResponseEntity
-                .status(HttpStatus.ACCEPTED)
-                .body("Task creation event published. Task ID: " + taskId));
+        return taskService.generateTaskId()
+                 .flatMap(taskId -> {
+                     log.info("POST /api/tasks - Publishing TaskCreatedEvent for: {}", taskId);
+                     eventPublisher.publishEvent(new TaskCreatedEvent(
+                             taskId,
+                             request.getTitle(),
+                             request.getDescription(),
+                             request.getStatus(),
+                             request.getPriority(),
+                             request.getDueDate(),
+                             LocalDateTime.now(),
+                             username
+                     ));
+                     return Mono.just(ResponseEntity
+                             .status(HttpStatus.ACCEPTED)
+                             .body("Task creation event published. Task ID: " + taskId));
+                 });
     }
 
      // Full update — all fields (title, description, priority, dueDate, status).
