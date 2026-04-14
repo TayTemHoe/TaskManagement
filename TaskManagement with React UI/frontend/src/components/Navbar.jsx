@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-import './NavBar.css';
+import './Navbar.css';
 
 export default function Navbar() {
   const { initialized, authenticated, username, isAdmin, logout } = useAuth();

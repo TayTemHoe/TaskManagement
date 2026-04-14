@@ -41,8 +41,8 @@ export default function App() {
         <Route path="/tasks/:id"     element={<PrivateRoute><TaskDetailPage /></PrivateRoute>} />
         <Route path="/tasks/:id/edit" element={<PrivateRoute><UpdateTaskPage /></PrivateRoute>} />
 
-        <Route path="/"  element={<Navigate to="/tasks" replace />} />
-        <Route path="*"  element={<Navigate to="/tasks" replace />} />
+        <Route path="/"  element={<Navigate to="/login" replace />} />
+        <Route path="*"  element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
