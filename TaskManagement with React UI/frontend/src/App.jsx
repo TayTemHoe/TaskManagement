@@ -31,31 +31,18 @@ import UnauthorizedPage from './pages/UnauthorizedPage';
 export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar/>
       <Routes>
-        {/* Public routes */}
-        <Route path="/login"        element={<LoginPage />} />
-        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route path="/login"   element={<LoginPage/>}/>
+        <Route path="/unauthorize" element={<UnauthorizedPage/>} />
 
-        {/* Protected routes — wrapped in PrivateRoute */}
-        <Route path="/tasks" element={
-          <PrivateRoute><TaskListPage /></PrivateRoute>
-        } />
-        <Route path="/tasks/new" element={
-          <PrivateRoute><CreateTaskPage /></PrivateRoute>
-        } />
-        <Route path="/tasks/:id" element={
-          <PrivateRoute><TaskDetailPage /></PrivateRoute>
-        } />
-        <Route path="/tasks/:id/edit" element={
-          <PrivateRoute><UpdateTaskPage /></PrivateRoute>
-        } />
+        <Route path="/tasks"         element={<PrivateRoute><TaskListPage /></PrivateRoute>} />
+        <Route path="/tasks/new"     element={<PrivateRoute><CreateTaskPage /></PrivateRoute>} />
+        <Route path="/tasks/:id"     element={<PrivateRoute><TaskDetailPage /></PrivateRoute>} />
+        <Route path="/tasks/:id/edit" element={<PrivateRoute><UpdateTaskPage /></PrivateRoute>} />
 
-        {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/tasks" replace />} />
-
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/tasks" replace />} />
+        <Route path="/"  element={<Navigate to="/tasks" replace />} />
+        <Route path="*"  element={<Navigate to="/tasks" replace />} />
       </Routes>
     </BrowserRouter>
   );

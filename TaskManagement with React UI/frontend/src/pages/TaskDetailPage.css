@@ -1,0 +1,99 @@
+/* ============================================================
+   TASK DETAIL PAGE
+   ============================================================ */
+
+.task-detail__title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.task-detail__task-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  flex: 1;
+}
+
+.task-detail__badges {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Info grid ──────────────────────────────────────────── */
+.task-detail__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 28px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.task-detail__field-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-subtle);
+  margin-bottom: 3px;
+}
+
+.task-detail__field-value {
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.task-detail__field-value--own {
+  color: var(--color-info);
+  font-weight: 700;
+}
+
+.task-detail__field-value--mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* ── Description block ──────────────────────────────────── */
+.task-detail__desc-box {
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin-bottom: 28px;
+  border: 1px solid var(--color-border);
+}
+
+.task-detail__desc-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-subtle);
+  margin-bottom: 8px;
+}
+
+.task-detail__desc-text {
+  font-size: 14.5px;
+  color: var(--color-text);
+  line-height: 1.65;
+}
+
+/* ── Actions ────────────────────────────────────────────── */
+.task-detail__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.task-detail__no-action {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-style: italic;
+  padding: 8px 0;
+}

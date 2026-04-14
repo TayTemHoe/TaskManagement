@@ -1,0 +1,88 @@
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 62px;
+  background: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  user-select: none;
+  transition: opacity var(--transition);
+}
+
+.navbar__brand:hover {
+  opacity: 0.85;
+}
+
+.navbar__brand-icon {
+  font-size: 20px;
+}
+
+.navbar__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.navbar__username {
+  font-size: 13px;
+  color: #b8c8e8;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.navbar__role-badge {
+  padding: 3px 11px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.navbar__role-badge--admin {
+  background: #e8590c;
+  color: #fff;
+}
+
+.navbar__role-badge--user {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.navbar__logout-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #b8c8e8;
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.navbar__logout-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border-color: rgba(255,255,255,0.45);
+}
