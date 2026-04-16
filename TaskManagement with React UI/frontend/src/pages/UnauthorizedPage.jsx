@@ -16,9 +16,9 @@ export default function UnauthorizedPage() {
           You can only update or delete tasks that you created.
           ADMIN users can modify any task.
         </p>
-        <button className="btn btn--primary" onClick={() => navigate('/tasks')}>
+        <Button name="btn btn--primary" onClick={() => navigate('/tasks')}>
           Back to Tasks
-        </button>
+        </Button>
       </div>
     </div>
   );

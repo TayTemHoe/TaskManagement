@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
+import Button from '../components/Button';
+import logo from '../assets/task-manager.png'
 
 export default function LoginPage() {
   const { initialized, authenticated, login } = useAuth();
@@ -24,7 +26,7 @@ export default function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="login-card__logo">📋</div>
+        <div className="login-card__logo"><img className="login-card__logo" src={logo} alt='task manager logo'/></div>
         <h1 className="login-card__title">Task Management</h1>
         <p className="login-card__subtitle">
           Sign in with your Keycloak account to manage your tasks.
@@ -42,10 +44,7 @@ export default function LoginPage() {
             <strong>user2</strong> / user123 — own tasks only (USER)
           </p>
         </div>
-
-        <button className="login-card__btn" onClick={login}>
-          Login with Keycloak
-        </button>
+        <Button name="login-card__btn" onClick={login} >Login</Button>
       </div>
     </div>
   );

@@ -126,9 +126,9 @@ export default function TaskForm({
         {errors.dueDate && <span className="form-field__error">{errors.dueDate}</span>}
       </div>
 
-      <button type="submit" className="form-submit-btn" disabled={loading}>
+      <Button type="submit" name="form-submit-btn" disabled={loading}>
         {loading ? 'Saving…' : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -7,10 +7,14 @@ import org.example.tay.taskmanagmentkafkareact.application.service.TaskService;
 import org.example.tay.taskmanagmentkafkareact.domain.event.TaskCreatedEvent;
 import org.example.tay.taskmanagmentkafkareact.domain.event.TaskDeletedEvent;
 import org.example.tay.taskmanagmentkafkareact.domain.event.TaskUpdatedEvent;
+import org.example.tay.taskmanagmentkafkareact.domain.model.TaskPriority;
+import org.example.tay.taskmanagmentkafkareact.domain.model.TaskStatus;
+import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskFilterDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskRequestDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskResponseDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskStatusUpdateDTO;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -148,9 +153,64 @@ public class TaskController {
 
      // Returns all tasks as a reactive stream.
      @GetMapping
-     public Flux<TaskResponseDTO> getAllTasks(Authentication authentication) {
-         log.info("GET /api/tasks — user: {}", extractUsername(authentication));
-         return taskService.getAllTasks();
+     public Flux<TaskResponseDTO> getAllTasks(
+             Authentication authentication,
+
+             // ── Filter params ─────────────────────────────────────
+             @RequestParam(required = false) TaskStatus status,
+             @RequestParam(required = false) TaskPriority priority,
+             @RequestParam(required = false) String       titleSearch,
+             @RequestParam(required = false) String       createdBy,
+             @RequestParam(required = false)
+             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueBefore,
+
+             @RequestParam(required = false)
+             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueAfter,
+
+             @RequestParam(required = false) Boolean overdueOnly,
+             @RequestParam(required = false) Boolean myTasksOnly,
+
+             // ── Sort params ───────────────────────────────────────
+             @RequestParam(required = false) String sortBy,
+             @RequestParam(required = false) String sortDir
+     ) {
+         String username = extractUsername(authentication);
+         log.info("GET /api/tasks — user: {}, status: {}, priority: {}, titleSearch: {}, " +
+                         "createdBy: {}, dueBefore: {}, dueAfter: {}, overdueOnly: {}, " +
+                         "myTasksOnly: {}, sortBy: {}, sortDir: {}",
+                 username, status, priority, titleSearch, createdBy,
+                 dueBefore, dueAfter, overdueOnly, myTasksOnly, sortBy, sortDir);
+
+         // Check if any filter or sort param was actually provided.
+         // If not, use the fast getAllTasks() path (no Criteria overhead).
+         boolean hasFilters = status != null || priority != null
+                 || (titleSearch != null && !titleSearch.isBlank())
+                 || (createdBy   != null && !createdBy.isBlank())
+                 || dueBefore != null || dueAfter != null
+                 || Boolean.TRUE.equals(overdueOnly)
+                 || Boolean.TRUE.equals(myTasksOnly)
+                 || (sortBy != null && !sortBy.isBlank())
+                 || (sortDir != null && !sortDir.isBlank());
+
+         if (!hasFilters) {
+             return taskService.getAllTasks();
+         }
+
+         TaskFilterDTO filter = TaskFilterDTO.builder()
+                 .status(status)
+                 .priority(priority)
+                 .titleSearch(titleSearch)
+                 .createdBySearch(createdBy)
+                 .dueBefore(dueBefore)
+                 .dueAfter(dueAfter)
+                 .overdueOnly(overdueOnly)
+                 .myTasksOnly(myTasksOnly)
+                 .currentUsername(username)    // injected from JWT — never from client
+                 .sortBy(sortBy)
+                 .sortDir(sortDir)
+                 .build();
+
+         return taskService.getFilteredTasks(filter);
      }
 
      // Returns a single task. Returns 404 if not found.
@@ -167,7 +227,6 @@ public class TaskController {
 
      /**
       * Extracts the username from the Authentication object.
-      * KeycloakJwtAuthConverter sets preferred_username as the principal name.
       */
      private String extractUsername(Authentication authentication) {
          return authentication != null ? authentication.getName() : "anonymous";

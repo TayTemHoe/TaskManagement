@@ -1,6 +1,7 @@
 package org.example.tay.taskmanagmentkafkareact.application.service;
 
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskEventDTO;
+import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskFilterDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskResponseDTO;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,6 +16,13 @@ public interface TaskService {
     // ── QUERY operations (Read) ──────────────────────────────
     Flux<TaskResponseDTO> getAllTasks();
     Mono<TaskResponseDTO> getTaskById(String id);
+
+    /**
+     * Returns tasks matching all non-null fields in the filter,
+     * sorted by filter.sortBy / filter.sortDir.
+     * When all filter fields are null this behaves identically to getAllTasks().
+     */
+    Flux<TaskResponseDTO> getFilteredTasks(TaskFilterDTO filter);
 
     // ── VALIDATION operation (New) ───────────────────────────
     // This allows the Controller to check ownership BEFORE Kafka

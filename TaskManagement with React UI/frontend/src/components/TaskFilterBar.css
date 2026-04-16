@@ -1,0 +1,221 @@
+/* ============================================================
+   TASK FILTER BAR
+   ============================================================ */
+
+.filter-bar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  animation: fadeIn 0.2s ease;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.filter-bar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--color-primary-light);
+  border-bottom: 1px solid var(--color-border);
+  gap: 12px;
+}
+
+.filter-bar__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition);
+}
+
+.filter-bar__toggle:hover { color: var(--color-accent); }
+
+.filter-bar__chevron {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-left: 2px;
+}
+
+/* Active filter count badge */
+.filter-bar__active-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  line-height: 1;
+}
+
+.filter-bar__clear-btn {
+  background: none;
+  border: 1.5px solid var(--color-error-border);
+  color: var(--color-error);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  white-space: nowrap;
+}
+
+.filter-bar__clear-btn:hover {
+  background: var(--color-error-bg);
+}
+
+/* ── Body ────────────────────────────────────────────────── */
+.filter-bar__body {
+  padding: 16px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Rows ────────────────────────────────────────────────── */
+.filter-bar__row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-bar__row--sort {
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+  margin-top: 2px;
+}
+
+/* ── Individual field ────────────────────────────────────── */
+.filter-bar__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.filter-bar__field--grow {
+  flex: 1;
+  min-width: 160px;
+}
+
+.filter-bar__field--toggles {
+  min-width: 0;
+}
+
+.filter-bar__label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-subtle);
+}
+
+.filter-bar__input,
+.filter-bar__select {
+  height: 34px;
+  padding: 0 10px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  font-family: var(--font-sans);
+  width: 100%;
+}
+
+.filter-bar__input:focus,
+.filter-bar__select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(59,111,212,0.10);
+}
+
+.filter-bar__input:disabled,
+.filter-bar__select:disabled {
+  background: var(--color-bg);
+  color: var(--color-text-subtle);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* ── Toggle buttons (Overdue / My Tasks) ─────────────────── */
+.filter-bar__toggles {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-bottom: 1px;   /* aligns baseline with input elements */
+}
+
+.filter-bar__toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition);
+}
+
+.filter-bar__toggle-btn:hover {
+  border-color: var(--color-border-hover);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+/* Active: Overdue — red tint */
+.filter-bar__toggle-btn--active-red {
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.filter-bar__toggle-btn--active-red:hover {
+  background: #fecaca;
+}
+
+/* Active: My Tasks — blue tint */
+.filter-bar__toggle-btn--active-blue {
+  background: var(--color-info-bg);
+  border-color: var(--color-info);
+  color: var(--color-info);
+}
+
+.filter-bar__toggle-btn--active-blue:hover {
+  background: #bfdbfe;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .filter-bar__row {
+    flex-direction: column;
+  }
+  .filter-bar__field,
+  .filter-bar__field--grow {
+    min-width: 0;
+    width: 100%;
+  }
+}

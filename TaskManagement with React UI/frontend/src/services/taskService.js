@@ -27,8 +27,25 @@ async function checkResponse(res) {
 
 // ── Queries (GET) ─────────────────────────────────────────────
 
-export async function getAllTasks(token) {
-  const res = await fetch(`${BASE_URL}/api/tasks`, { headers: headers(token) });
+export async function getAllTasks(token, filters = {}) {
+  const params = new URLSearchParams();
+
+  // Only append params that have actual values
+  if (filters.status)                        params.set('status',      filters.status);
+  if (filters.priority)                      params.set('priority',    filters.priority);
+  if (filters.titleSearch?.trim())           params.set('titleSearch', filters.titleSearch.trim());
+  if (filters.createdBy?.trim())             params.set('createdBy',   filters.createdBy.trim());
+  if (filters.dueBefore)                     params.set('dueBefore',   filters.dueBefore);
+  if (filters.dueAfter)                      params.set('dueAfter',    filters.dueAfter);
+  if (filters.overdueOnly === true)          params.set('overdueOnly', 'true');
+  if (filters.myTasksOnly === true)          params.set('myTasksOnly', 'true');
+  if (filters.sortBy)                        params.set('sortBy',      filters.sortBy);
+  if (filters.sortDir)                       params.set('sortDir',     filters.sortDir);
+
+  const queryString = params.toString();
+  const url = `${BASE_URL}/api/tasks${queryString ? '?' + queryString : ''}`;
+
+  const res = await fetch(url, { headers: headers(token) });
   await checkResponse(res);
   return res.json();
 }

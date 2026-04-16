@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { getTaskById, deleteTask, updateTaskStatus } from '../services/taskService';
 import { StatusBadge, PriorityBadge } from '../components/Badges';
 import './TaskDetailPage.css';
+import Button from '../components/Button';
 
 export default function TaskDetailPage() {
   const { id } = useParams();
@@ -31,7 +32,7 @@ export default function TaskDetailPage() {
       }
     }
     load();
-  }, [id, token, updateToken]);
+  }, [id, token]);
 
   function showToast(msg, type = 'success') {
     setToast({ msg, type });
@@ -93,7 +94,7 @@ export default function TaskDetailPage() {
     return (
       <div className="page page--narrow">
         <div className="alert alert--error">{error}</div>
-        <button className="back-btn" onClick={() => navigate('/tasks')}>← Back to Tasks</button>
+        <Button name="back-btn" onClick={() => navigate('/tasks')}>← Back to Tasks</Button>
       </div>
     );
   }
@@ -106,9 +107,7 @@ export default function TaskDetailPage() {
         <div className={`toast toast--${toast.type}`}>{toast.msg}</div>
       )}
 
-      <button className="back-btn" onClick={() => navigate('/tasks')}>
-        ← Back to Tasks
-      </button>
+      <Button name="back-btn" onClick={() => navigate('/tasks')}>← Back to Tasks</Button>
 
       <div className="card card--padded">
         {/* Title + badges */}
@@ -159,28 +158,28 @@ export default function TaskDetailPage() {
         {/* Actions */}
         <div className="task-detail__actions">
           {canModify && task.status !== 'COMPLETED' && (
-            <button
-              className="btn btn--outline-purple"
+            <Button
+              name="btn btn--outline-purple"
               onClick={handleAdvanceStatus}
               disabled={busy}
             >
               {task.status === 'PENDING' ? '▶ Mark In Progress' : '✓ Mark Completed'}
-            </button>
+            </Button>
           )}
 
           {canModify && task.status !== 'COMPLETED' && (
-            <button
-              className="btn btn--outline-green"
+            <Button
+              name="btn btn--outline-green"
               onClick={() => navigate(`/tasks/${task.id}/edit`)}
             >
               ✏ Edit Task
-            </button>
+            </Button>
           )}
 
           {canModify && (
-            <button className="btn btn--outline-red" onClick={handleDelete} disabled={busy}>
+            <Button name="btn btn--outline-red" onClick={handleDelete} disabled={busy}>
               🗑 Delete Task
-            </button>
+            </Button>
           )}
 
           {!canModify && (

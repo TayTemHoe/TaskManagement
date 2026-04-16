@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import logo from '../assets/task-manager.png'
 import './Navbar.css';
+import Button from './Button.jsx';
 
 export default function Navbar() {
   const { initialized, authenticated, username, isAdmin, logout } = useAuth();
@@ -17,7 +19,7 @@ export default function Navbar() {
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && navigate('/tasks')}
       >
-        <span className="navbar__brand-icon">📋</span>
+        <img src={logo} className="navbar__brand-icon" alt='task manager logo'/>
         Task Management
       </span>
 
@@ -29,9 +31,9 @@ export default function Navbar() {
             {isAdmin ? 'ADMIN' : 'USER'}
           </span>
 
-          <button className="navbar__logout-btn" onClick={logout}>
+          <Button name="navbar__logout-btn" onClick={logout}>
             Logout
-          </button>
+          </Button>
         </div>
       )}
     </nav>

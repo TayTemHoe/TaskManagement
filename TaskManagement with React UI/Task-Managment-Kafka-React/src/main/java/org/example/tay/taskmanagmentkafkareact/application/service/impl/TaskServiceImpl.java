@@ -7,6 +7,7 @@ import org.example.tay.taskmanagmentkafkareact.domain.model.Task;
 import org.example.tay.taskmanagmentkafkareact.domain.model.TaskStatus;
 import org.example.tay.taskmanagmentkafkareact.domain.repository.TaskRepository;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskEventDTO;
+import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskFilterDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskResponseDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.exception.ConflictException;
 import org.example.tay.taskmanagmentkafkareact.shared.exception.TaskNotFoundException;
@@ -49,6 +50,13 @@ public class TaskServiceImpl implements TaskService {
                 .map(taskMapper::toResponseDTO);
     }
 
+    @Override
+    public Flux<TaskResponseDTO> getFilteredTasks(TaskFilterDTO filter) {
+        log.info("Delegating filter query to TaskRepository: {}", filter);
+        // Call the repository method directly
+        return taskRepository.findByFilters(filter)
+                .map(taskMapper::toResponseDTO);
+    }
 
 //        Handles TASK_CREATED event from Kafka.
 //        1. Task ID must not already exist
