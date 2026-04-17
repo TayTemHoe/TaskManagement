@@ -114,6 +114,17 @@ public class GlobalExceptionHandler {
                         "An unexpected error occurred", exchange.getRequest().getPath().value())));
     }
 
+    @ExceptionHandler(KafkaPublishException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleKafkaError(
+            KafkaPublishException ex, ServerWebExchange exchange) {
+        log.error("Kafka publish error: {}", ex.getMessage());
+        return Mono.just(ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE) // 503 服务不可用
+                .body(buildError(HttpStatus.SERVICE_UNAVAILABLE, "Service Unavailable",
+                        "The message queue is down. Please try again later.",
+                        exchange.getRequest().getPath().value())));
+    }
+
     // ── Builder helper ───────────────────────────────────────────
     private ErrorResponse buildError(HttpStatus status, String error, String message, String path) {
         return ErrorResponse.builder()

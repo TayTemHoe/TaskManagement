@@ -8,6 +8,7 @@ import org.example.tay.taskmanagmentkafkareact.domain.model.TaskStatus;
 import org.example.tay.taskmanagmentkafkareact.domain.repository.TaskRepository;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskEventDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskFilterDTO;
+import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskRequestDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskResponseDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.exception.ConflictException;
 import org.example.tay.taskmanagmentkafkareact.shared.exception.TaskNotFoundException;
@@ -23,6 +24,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 // APPLICATION LAYER — Task Service Implementation
 @Slf4j
@@ -314,8 +316,35 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public Mono<Void> validateUpdate(String taskId, TaskRequestDTO request) {
+        return taskRepository.findById(taskId)
+                .switchIfEmpty(Mono.error(new TaskNotFoundException(taskId)))
+                .flatMap(existingTask -> {
+                    // 1. 如果任务已完成，禁止任何修改
+                    if (existingTask.getStatus() == TaskStatus.COMPLETED) {
+                        return Mono.error(new ConflictException("COMPLETED tasks are locked."));
+                    }
+
+                    // 2. 状态转换校验 (重用 handleUpdate 中的逻辑)
+                    if (request.getStatus() != null && request.getStatus() != existingTask.getStatus()) {
+                        return validateStatusTransition(existingTask.getStatus(), request.getStatus(), taskId);
+                    }
+
+                    return Mono.empty();
+                });
+    }
+
+    @Override
     public Mono<String> generateTaskId() {
-        return taskRepository.count()
-                .map(count -> String.format("TASK-%04d", count + 1));
+        String newId = "TASK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        return taskRepository.existsById(newId)
+                .flatMap(exists -> {
+                    if (exists) {
+                        log.warn("Task ID collision detected for {}, regenerating...", newId);
+                        return generateTaskId();
+                    }
+                    return Mono.just(newId);
+                });
     }
 }

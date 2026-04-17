@@ -127,6 +127,18 @@ services:
     networks:
       - task-network
 
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8090:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local-cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    depends_on:
+      - kafka
+
 volumes:
   mongo_data:
 

@@ -1,13 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getTaskById, updateTask } from '../services/taskService';
 import TaskForm from '../components/TaskForm';
+import Button from '../components/Button';
 
 export default function UpdateTaskPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token, username, isAdmin, updateToken } = useAuth();
+  const { token, username, isAdmin, updateToken, initialized } = useAuth();
+
+  const updateTokenRef = useRef(updateToken);
+
+  useEffect(() =>{
+    updateTokenRef.current = updateToken;
+  }, [updateToken])
 
   const [task,    setTask]    = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,8 +25,10 @@ export default function UpdateTaskPage() {
   // ── Load task ────────────────────────────────────────────────
   useEffect(() => {
     async function load() {
+
+      if (!initialized || !token) return;
       try {
-        await updateToken(30);
+        await updateTokenRef.current(30); 
         const data = await getTaskById(token, id);
         setTask(data);
 
@@ -28,7 +37,6 @@ export default function UpdateTaskPage() {
           navigate(`/tasks/${id}`, { replace: true });
           return;
         }
-        // Guard: USER can only edit own tasks
         if (!isAdmin && data.createdBy !== username) {
           navigate('/unauthorized', { replace: true });
           return;
@@ -40,23 +48,23 @@ export default function UpdateTaskPage() {
       }
     }
     load();
-  }, [id, token, username, isAdmin, updateToken, navigate]);
+  }, [id, token, username, isAdmin, navigate]);
 
   // ── Submit ───────────────────────────────────────────────────
   async function handleSubmit(formData) {
     try {
       setSaving(true);
       setError(null);
-      await updateToken(30);
-      await updateTask(token, id, formData);
+      await updateTokenRef.current(30); 
+      
+      // 如果后端 validateUpdate 失败，这里会抛出包含 backend message 的 Error
+      await updateTask(token, id, formData); 
+      
       setSuccess(true);
       setTimeout(() => navigate(`/tasks/${id}`), 1500);
     } catch (err) {
-      setError(
-        err.message.includes('403')
-          ? 'You can only edit tasks you created.'
-          : err.message
-      );
+      // 优先显示后端返回的具体错误消息
+      setError(err.message); 
       setSaving(false);
     }
   }
@@ -77,7 +85,7 @@ export default function UpdateTaskPage() {
     return (
       <div className="page page--narrow">
         <div className="alert alert--error">{error}</div>
-        <button className="back-btn" onClick={() => navigate('/tasks')}>← Back to Tasks</button>
+        <Button name="back-btn" onClick={() => navigate('/tasks')}>← Back to Tasks</Button>
       </div>
     );
   }
@@ -86,9 +94,9 @@ export default function UpdateTaskPage() {
 
   return (
     <div className="page page--narrow">
-      <button className="back-btn" onClick={() => navigate(`/tasks/${id}`)}>
+      <Button name="back-btn" onClick={() => navigate(`/tasks/${id}`)}>
         ← Back to Task
-      </button>
+      </Button>
 
       <div className="card card--padded">
         <h2 className="form-page__title">Edit Task</h2>

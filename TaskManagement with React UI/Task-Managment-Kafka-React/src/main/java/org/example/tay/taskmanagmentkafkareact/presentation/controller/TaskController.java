@@ -1,6 +1,7 @@
 package org.example.tay.taskmanagmentkafkareact.presentation.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.tay.taskmanagmentkafkareact.application.service.TaskService;
@@ -62,7 +63,7 @@ public class TaskController {
                              username
                      ));
                      return Mono.just(ResponseEntity
-                             .status(HttpStatus.ACCEPTED)
+                             .status(HttpStatus.CREATED)
                              .body("Task creation event published. Task ID: " + taskId));
                  });
     }
@@ -81,23 +82,16 @@ public class TaskController {
 
         return taskService.getTaskById(id) // 1. Fetch task first
                 .flatMap(taskService::validateOwnership)// 2. Validate while JWT is active
-                .flatMap(validTask -> {
-                    // 3. Only publish if validation passed
-                    // Pass null for title/description/priority/dueDate to signal MODE A (status-only)
+                .then(taskService.validateUpdate(id, request))
+                .then(Mono.defer(() -> {
                     eventPublisher.publishEvent(new TaskUpdatedEvent(
-                            id,
-                            request.getTitle(),        // non-null title triggers MODE B (full update)
-                            request.getDescription(),
-                            request.getStatus(),
-                            request.getPriority(),
-                            request.getDueDate(),
-                            LocalDateTime.now(),
-                            username
+                            id, request.getTitle(), request.getDescription(),
+                            request.getStatus(), request.getPriority(), request.getDueDate(),
+                            LocalDateTime.now(), username
                     ));
-                    return Mono.just(ResponseEntity
-                            .status(HttpStatus.ACCEPTED)
-                            .body("Update task event published. Task ID: " + id ));
-                });
+                    return Mono.just(ResponseEntity.status(HttpStatus.ACCEPTED)
+                            .body("Update event published."));
+                }));
     }
 
      // Status-only update — only changes the status field.
@@ -135,7 +129,7 @@ public class TaskController {
 
      @DeleteMapping("/{id}")
      public Mono<ResponseEntity<String>> deleteTask(
-             @PathVariable String id,
+             @NotBlank @PathVariable String id,
              Authentication authentication) {
 
          String username = extractUsername(authentication);
@@ -143,7 +137,7 @@ public class TaskController {
                  .flatMap(taskService::validateOwnership)// 2. Validate while JWT is active
                  .flatMap(validTask -> {
                      // 3. Only publish if validation passed
-                     eventPublisher.publishEvent(new TaskDeletedEvent(id, id, LocalDateTime.now(),username));
+                     eventPublisher.publishEvent(new TaskDeletedEvent(id, validTask.getTitle(), LocalDateTime.now(),username));
                      return Mono.just(ResponseEntity.status(HttpStatus.ACCEPTED)
                              .body("Task deletion event published. Task ID: " + id));
                  });
@@ -216,7 +210,7 @@ public class TaskController {
      // Returns a single task. Returns 404 if not found.
      @GetMapping("/{id}")
      public Mono<ResponseEntity<TaskResponseDTO>> getTaskById(
-             @PathVariable String id,
+             @NotBlank @PathVariable String id,
              Authentication authentication) {
          log.info("GET /api/tasks/{} — user: {}", id, extractUsername(authentication));
          return taskService.getTaskById(id)

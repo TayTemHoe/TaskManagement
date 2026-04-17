@@ -1,18 +1,9 @@
 import { useState } from 'react';
 import './TaskFilterBar.css';
+import Button from './Button';
 
 /**
  * TaskFilterBar — filter and sort controls for the task list.
- *
- * Props:
- *   filters         — current filter state (controlled by TaskListPage)
- *   onFilterChange  — called with the full updated filter object on every change
- *   onReset         — called when the user clicks "Clear All"
- *   activeCount     — number of active filters (shown on the Clear button)
- *
- * The component is fully controlled — it never holds its own filter state.
- * TaskListPage owns the state and passes it down.
- *
  * Layout:
  *   Row 1: Title search | Status | Priority | CreatedBy search
  *   Row 2: Due After | Due Before | [Overdue] [My Tasks] quick-toggle buttons
@@ -36,22 +27,22 @@ export default function TaskFilterBar({ filters, onFilterChange, onReset, active
     <div className="filter-bar">
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="filter-bar__header">
-        <button
-          className="filter-bar__toggle"
+        <Button
+          name="filter-bar__toggle"
           onClick={() => setExpanded((v) => !v)}
           title={expanded ? 'Collapse filters' : 'Expand filters'}
         >
-          🔍 Filters &amp; Sort
+          Filters &amp; Sort
           {activeCount > 0 && (
             <span className="filter-bar__active-badge">{activeCount}</span>
           )}
           <span className="filter-bar__chevron">{expanded ? '▲' : '▼'}</span>
-        </button>
+        </Button>
 
         {activeCount > 0 && (
-          <button className="filter-bar__clear-btn" onClick={onReset}>
+          <Button name="filter-bar__clear-btn" onClick={onReset}>
             ✕ Clear all ({activeCount})
-          </button>
+          </Button>
         )}
       </div>
 
@@ -169,8 +160,8 @@ export default function TaskFilterBar({ filters, onFilterChange, onReset, active
               <label className="filter-bar__label">Quick filters</label>
               <div className="filter-bar__toggles">
                 {/* Overdue button */}
-                <button
-                  className={`filter-bar__toggle-btn ${filters.overdueOnly ? 'filter-bar__toggle-btn--active-red' : ''}`}
+                <Button
+                  name={`filter-bar__toggle-btn ${filters.overdueOnly ? 'filter-bar__toggle-btn--active-red' : ''}`}
                   onClick={() => onFilterChange({
                     ...filters,
                     overdueOnly: filters.overdueOnly ? null : true,
@@ -183,11 +174,11 @@ export default function TaskFilterBar({ filters, onFilterChange, onReset, active
                   title="Show tasks where due date is before today and status is not COMPLETED"
                 >
                   🔴 Overdue
-                </button>
+                </Button>
 
                 {/* My Tasks button */}
-                <button
-                  className={`filter-bar__toggle-btn ${filters.myTasksOnly ? 'filter-bar__toggle-btn--active-blue' : ''}`}
+                <Button
+                  name={`filter-bar__toggle-btn ${filters.myTasksOnly ? 'filter-bar__toggle-btn--active-blue' : ''}`}
                   onClick={() => onFilterChange({
                     ...filters,
                     myTasksOnly: filters.myTasksOnly ? null : true,
@@ -197,7 +188,7 @@ export default function TaskFilterBar({ filters, onFilterChange, onReset, active
                   title="Show only your own tasks (tasks you created)"
                 >
                   👤 My Tasks
-                </button>
+                </Button>
               </div>
             </div>
           </div>

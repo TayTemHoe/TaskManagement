@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import './TaskForm.css';
+import Button from './Button';
 
 export default function TaskForm({
   initialValues = {},
   onSubmit,
   submitLabel = 'Submit',
   loading = false,
+  isCreateMode = false
 }) {
   const [form, setForm] = useState({
     title:       initialValues.title       || '',
@@ -91,8 +93,10 @@ export default function TaskForm({
             disabled={loading}
           >
             <option value="PENDING">PENDING</option>
-            <option value="IN_PROGRESS">IN_PROGRESS</option>
-            <option value="COMPLETED">COMPLETED</option>
+            {!isCreateMode && ( <>
+              <option value="IN_PROGRESS">IN_PROGRESS</option>
+              <option value="COMPLETED">COMPLETED</option>
+              </>)}
           </select>
           {errors.status && <span className="form-field__error">{errors.status}</span>}
         </div>

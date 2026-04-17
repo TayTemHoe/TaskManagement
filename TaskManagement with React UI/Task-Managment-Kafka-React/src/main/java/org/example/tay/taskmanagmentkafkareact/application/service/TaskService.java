@@ -2,6 +2,7 @@ package org.example.tay.taskmanagmentkafkareact.application.service;
 
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskEventDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskFilterDTO;
+import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskRequestDTO;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskResponseDTO;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,8 +26,8 @@ public interface TaskService {
     Flux<TaskResponseDTO> getFilteredTasks(TaskFilterDTO filter);
 
     // ── VALIDATION operation (New) ───────────────────────────
-    // This allows the Controller to check ownership BEFORE Kafka
     Mono<TaskResponseDTO> validateOwnership(TaskResponseDTO task);
+    Mono<Void> validateUpdate(String taskId, TaskRequestDTO request);
     Mono<String> generateTaskId();
 
     // ── COMMAND operations (Write) — triggered by Kafka Consumer ──

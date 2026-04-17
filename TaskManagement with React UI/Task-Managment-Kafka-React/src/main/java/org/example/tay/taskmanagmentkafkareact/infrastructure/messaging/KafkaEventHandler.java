@@ -7,6 +7,7 @@ import org.example.tay.taskmanagmentkafkareact.domain.event.TaskDeletedEvent;
 import org.example.tay.taskmanagmentkafkareact.domain.event.TaskUpdatedEvent;
 import org.example.tay.taskmanagmentkafkareact.domain.model.TaskEventType;
 import org.example.tay.taskmanagmentkafkareact.shared.dto.TaskEventDTO;
+import org.example.tay.taskmanagmentkafkareact.shared.exception.KafkaPublishException;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -37,52 +38,71 @@ public class KafkaEventHandler {
     public void handleTaskCreated(TaskCreatedEvent event) {
         log.info("Handling TaskCreatedEvent for task: {} by user: {}",
                 event.getTaskId(), event.getCreatedBy());
-        kafkaProducerService.publishEvent(
-                TaskEventDTO.builder()
-                        .eventType(TaskEventType.TASK_CREATED)
-                        .taskId(event.getTaskId())
-                        .title(event.getTitle())
-                        .description(event.getDescription())
-                        .status(event.getStatus())
-                        .priority(event.getPriority())
-                        .dueDate(event.getDueDate())
-                        .createdBy(event.getCreatedBy())   // from JWT, not from event (event is immutable snapshot of creation)
-                        .timestamp(LocalDateTime.now())
-                        .build()
-        );
+        try {
+            kafkaProducerService.publishEvent(
+                    TaskEventDTO.builder()
+                            .eventType(TaskEventType.TASK_CREATED)
+                            .taskId(event.getTaskId())
+                            .title(event.getTitle())
+                            .description(event.getDescription())
+                            .status(event.getStatus())
+                            .priority(event.getPriority())
+                            .dueDate(event.getDueDate())
+                            .createdBy(event.getCreatedBy())
+                            .timestamp(LocalDateTime.now())
+                            .build()
+            );
+        } catch (KafkaPublishException e) {
+            // This catches the exception thrown from the CompletableFuture callback.
+            // Log at ERROR level with full context so it is visible in docker logs.
+            log.error("KAFKA HANDLER ERROR — Failed to publish TASK_CREATED " +
+                    "for task: {}. The task will NOT be saved to MongoDB. " +
+                    "Error: {}", event.getTaskId(), e.getMessage(), e);
+            // In production: write to outbox table or alert here
+        }
     }
 
     @EventListener
     public void handleTaskUpdated(TaskUpdatedEvent event) {
         log.info("Handling TaskUpdatedEvent for task: {} by user: {}",
                 event.getTaskId(), event.getUpdatedBy());
-        kafkaProducerService.publishEvent(
-                TaskEventDTO.builder()
-                        .eventType(TaskEventType.TASK_UPDATED)
-                        .taskId(event.getTaskId())
-                        .title(event.getTitle())           // null = MODE A (status-only)
-                        .description(event.getDescription())
-                        .status(event.getStatus())
-                        .priority(event.getPriority())
-                        .dueDate(event.getDueDate())
-                        .updatedBy(event.getUpdatedBy())   // from JWT
-                        .timestamp(LocalDateTime.now())
-                        .build()
-        );
+        try {
+            kafkaProducerService.publishEvent(
+                    TaskEventDTO.builder()
+                            .eventType(TaskEventType.TASK_UPDATED)
+                            .taskId(event.getTaskId())
+                            .title(event.getTitle())
+                            .description(event.getDescription())
+                            .status(event.getStatus())
+                            .priority(event.getPriority())
+                            .dueDate(event.getDueDate())
+                            .updatedBy(event.getUpdatedBy())
+                            .timestamp(LocalDateTime.now())
+                            .build()
+            );
+        } catch (KafkaPublishException e) {
+            log.error("KAFKA HANDLER ERROR — Failed to publish TASK_UPDATED " +
+                    "for task: {}. Error: {}", event.getTaskId(), e.getMessage(), e);
+        }
     }
 
     @EventListener
     public void handleTaskDeleted(TaskDeletedEvent event) {
         log.info("Handling TaskDeletedEvent for task: {} by user: {}",
                 event.getTaskId(), event.getDeletedBy());
-        kafkaProducerService.publishEvent(
-                TaskEventDTO.builder()
-                        .eventType(TaskEventType.TASK_DELETED)
-                        .taskId(event.getTaskId())
-                        .title(event.getTitle())
-                        .updatedBy(event.getDeletedBy())   // who triggered deletion
-                        .timestamp(LocalDateTime.now())
-                        .build()
-        );
+        try {
+            kafkaProducerService.publishEvent(
+                    TaskEventDTO.builder()
+                            .eventType(TaskEventType.TASK_DELETED)
+                            .taskId(event.getTaskId())
+                            .title(event.getTitle())
+                            .updatedBy(event.getDeletedBy())
+                            .timestamp(LocalDateTime.now())
+                            .build()
+            );
+        } catch (KafkaPublishException e) {
+            log.error("KAFKA HANDLER ERROR — Failed to publish TASK_DELETED " +
+                    "for task: {}. Error: {}", event.getTaskId(), e.getMessage(), e);
+        }
     }
 }

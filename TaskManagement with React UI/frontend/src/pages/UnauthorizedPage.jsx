@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import './UnauthorizedPage.css';
+import Button from '../components/Button';
 
 export default function UnauthorizedPage() {
   const navigate = useNavigate();

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { createTask } from "../services/taskService";
 import TaskForm from "../components/TaskForm";
+import Button from "../components/Button";
 
 export default function CreateTaskPage() {
   const navigate = useNavigate();
@@ -28,9 +29,9 @@ export default function CreateTaskPage() {
 
   return (
     <div className="page page--narrow">
-      <button className="back-btn" onClick={() => navigate("/tasks")}>
+      <Button name="back-btn" onClick={() => navigate("/tasks")}>
         ← Back to Tasks
-      </button>
+      </Button>
 
       <div className="card card--padded">
         <h2 className="form-page__title">Create New Task</h2>
@@ -56,6 +57,7 @@ export default function CreateTaskPage() {
             submitLabel="Create Task"
             loading={loading}
             initialValues={{ status: "PENDING" }}
+            isCreateMode ={true}
           />
         )}
       </div>

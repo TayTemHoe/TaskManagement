@@ -30,6 +30,7 @@ import java.util.Map;
 @Configuration
 public class KafkaConfig {
 
+
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -39,6 +40,10 @@ public class KafkaConfig {
     @Value("${kafka.topic.name}")
     private String taskEventsTopic;
 
+    // Topics
+    /**
+     * Main topic: task-events
+     */
     @Bean
     public NewTopic taskEventsTopic() {
         return TopicBuilder.name(taskEventsTopic)
@@ -47,14 +52,51 @@ public class KafkaConfig {
                 .build();
     }
 
+    /**
+     * Dead Letter Topic: task-events.DLT
+     *
+     * Spring Kafka's DeadLetterPublishingRecoverer automatically appends ".DLT"
+     * to the original topic name. We pre-create it here so it exists before
+     * any messages need to go there.
+     *
+     * Without this bean, Kafka will auto-create the DLT on first failure,
+     * which is fine for development but risky for production.
+     */
+    @Bean
+    public NewTopic taskEventsDltTopic() {
+        return TopicBuilder.name(taskEventsTopic + ".DLT")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    // ── Producer ─────────────────────────────────────────────────────
     @Bean
     public ProducerFactory<String, TaskEventDTO> producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,   StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JacksonJsonSerializer.class);
         props.put(JacksonJsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+
+        // Producer resilience settings
+        // Retry up to 10 times on transient send failures
         props.put(ProducerConfig.RETRIES_CONFIG, 10);
+        // Wait 2 seconds between retries (prevents hammering a down broker)
+        props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 2000);
+        // Give up on metadata fetch after 10 seconds (fail fast when Kafka is down)
+        props.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 10_000);
+        // Total time budget for one send including all retries = 60 seconds
+        props.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 60_000);
+        // Per-request broker timeout = 10 seconds
+        props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 10_000);
+
+        // ── Exactly-once on producer side
+        // Prevents duplicate messages when a send is retried after timeout
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        // Required by idempotence: all in-sync replicas must ack
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+
         return new DefaultKafkaProducerFactory<>(props);
     }
 
@@ -63,12 +105,21 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
+    // ── Consumer ─────────────────────────────────────────────────────
     @Bean
     public ConsumerFactory<String, TaskEventDTO> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,  bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG,           groupId);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,  "earliest");
+
+        // Manual offset commit: only commit after successful processing
+        // AUTO_COMMIT = true (default) commits offsets on a timer regardless
+        // of processing success. This means a failed message is "consumed"
+        // even if the handler threw an exception.
+        // Setting to false + ENABLE_AUTO_COMMIT=false gives the error handler
+        // control over when to commit (after DLT write or successful processing).
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         JacksonJsonDeserializer<TaskEventDTO> deserializer =
                 new JacksonJsonDeserializer<>(TaskEventDTO.class);
@@ -82,6 +133,30 @@ public class KafkaConfig {
         );
     }
 
+    /**
+     * Listener container factory with Dead Letter Topic and retry backoff.
+     *
+     * DefaultErrorHandler replaces the old SeekToCurrentErrorHandler.
+     *
+     * FixedBackOff(2000L, 3):
+     *   - intervalMillis = 2000 → wait 2 seconds between retries
+     *   - maxAttempts    = 3    → retry 3 times before giving up
+     *   After 3 failures: DeadLetterPublishingRecoverer moves message to DLT.
+     *
+     * DeadLetterPublishingRecoverer(kafkaTemplate()):
+     *   Writes the failed message to topic "task-events.DLT".
+     *   The DLT message includes:
+     *     - Original message bytes
+     *     - Exception class name header
+     *     - Exception message header
+     *     - Original topic/partition/offset headers
+     *
+     * NOT_RETRYABLE_EXCEPTIONS (optional but recommended):
+     *   Deserialization errors should not be retried — the message bytes
+     *   are broken and retrying them will always fail.
+     *   Add deserializer exception classes to errorHandler.addNotRetryableExceptions()
+     *   to skip retries and go straight to DLT for those.
+     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, TaskEventDTO>
     kafkaListenerContainerFactory() {
@@ -89,11 +164,20 @@ public class KafkaConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
 
-        // kafkaTemplate() is a @Bean in this same class — call it directly
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler(
-                new DeadLetterPublishingRecoverer(kafkaTemplate()),
-                new FixedBackOff(1000L, 3)
+        // Dead Letter Topic recoverer: after retries exhausted, write to DLT
+        DeadLetterPublishingRecoverer recoverer =
+                new DeadLetterPublishingRecoverer(kafkaTemplate());
+
+        // Retry 3 times with 2-second intervals, then DLT
+        DefaultErrorHandler errorHandler =
+                new DefaultErrorHandler(recoverer, new FixedBackOff(2000L, 3));
+
+        // Deserialization errors are unrecoverable — skip straight to DLT
+        // (no point retrying a broken message 3 times)
+        errorHandler.addNotRetryableExceptions(
+                org.apache.kafka.common.errors.SerializationException.class
         );
+
         factory.setCommonErrorHandler(errorHandler);
         return factory;
     }
