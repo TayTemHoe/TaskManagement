@@ -39,7 +39,7 @@ public class KafkaProducerService {
             if (ex == null) {
                 // ── SUCCESS: message durably written to Kafka broker ──────────
                 log.info(
-                        "✓ Kafka event PUBLISHED successfully: eventType={}, taskId={}, " +
+                        "Kafka event PUBLISHED successfully: eventType={}, taskId={}, " +
                                 "topic={}, partition={}, offset={}",
                         event.getEventType(),
                         event.getTaskId(),
@@ -52,7 +52,7 @@ public class KafkaProducerService {
                 // This fires after the configured RETRIES_CONFIG attempts are exhausted.
                 // With RETRIES=10 and backoff=2s, this happens ~20 seconds after the error.
                 log.error(
-                        "✗ Kafka event FAILED to publish: eventType={}, taskId={}, " +
+                        "Kafka event FAILED to publish: eventType={}, taskId={}, " +
                                 "topic={}, error={}",
                         event.getEventType(),
                         event.getTaskId(),

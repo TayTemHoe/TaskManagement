@@ -151,11 +151,6 @@ public class KafkaConfig {
      *     - Exception message header
      *     - Original topic/partition/offset headers
      *
-     * NOT_RETRYABLE_EXCEPTIONS (optional but recommended):
-     *   Deserialization errors should not be retried — the message bytes
-     *   are broken and retrying them will always fail.
-     *   Add deserializer exception classes to errorHandler.addNotRetryableExceptions()
-     *   to skip retries and go straight to DLT for those.
      */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, TaskEventDTO>

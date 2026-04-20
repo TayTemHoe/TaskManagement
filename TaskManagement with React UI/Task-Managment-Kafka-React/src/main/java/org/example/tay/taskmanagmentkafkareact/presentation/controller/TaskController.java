@@ -72,7 +72,7 @@ public class TaskController {
      // Only allowed when task is PENDING.
     @PutMapping("/{id}")
     public Mono<ResponseEntity<String>> updateTask(
-            @PathVariable String id,
+            @NotBlank @PathVariable String id,
             @Valid @RequestBody TaskRequestDTO request,
             Authentication authentication) {
 
@@ -98,7 +98,7 @@ public class TaskController {
      // Works for both PENDING → IN_PROGRESS and IN_PROGRESS → COMPLETED.
     @PatchMapping("/{id}/status")
     public Mono<ResponseEntity<String>> updateTaskStatus(
-            @PathVariable String id,
+            @NotBlank @PathVariable String id,
             @Valid @RequestBody TaskStatusUpdateDTO statusUpdate,
             Authentication authentication) {
 

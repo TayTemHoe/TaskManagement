@@ -60,11 +60,6 @@ public class TaskServiceImpl implements TaskService {
                 .map(taskMapper::toResponseDTO);
     }
 
-//        Handles TASK_CREATED event from Kafka.
-//        1. Task ID must not already exist
-//        2. Due date must not be in the past
-//        3. Due date must not be more than 1 year ahead
-//        4. Status must be PENDING (enforced here — cannot create as IN_PROGRESS or COMPLETED)
 
     @Override
     public Mono<Void> handleCreate(TaskEventDTO event) {

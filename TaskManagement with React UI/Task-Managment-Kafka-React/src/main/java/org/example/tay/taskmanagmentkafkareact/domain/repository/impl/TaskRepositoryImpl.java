@@ -24,18 +24,18 @@ public class TaskRepositoryImpl implements TaskRepositoryCustom {
     public Flux<Task> findByFilters(TaskFilterDTO filter) {
         List<Criteria> criteriaList = new ArrayList<>();
 
-        // 1. Status & Priority
+        //Status & Priority
         if (filter.getStatus() != null)
             criteriaList.add(Criteria.where("status").is(filter.getStatus()));
         if (filter.getPriority() != null)
             criteriaList.add(Criteria.where("priority").is(filter.getPriority()));
 
-        // 2. Title & CreatedBy Search (Regex)
+        // Title & CreatedBy Search (Regex)
         if (filter.getTitleSearch() != null && !filter.getTitleSearch().isBlank()) {
             criteriaList.add(Criteria.where("title").regex(filter.getTitleSearch(), "i"));
         }
 
-        // 3. User Ownership (myTasksOnly takes precedence)
+        // User Ownership (myTasksOnly takes precedence)
         if (Boolean.TRUE.equals(filter.getMyTasksOnly()) && filter.getCurrentUsername() != null) {
             criteriaList.add(Criteria.where("createdBy").is(filter.getCurrentUsername()));
         } else if (filter.getCreatedBySearch() != null && !filter.getCreatedBySearch().isBlank()) {

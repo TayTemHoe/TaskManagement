@@ -8,10 +8,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
-//  Separation of concerns is maintained through the flow:
-//    Controller -> event -> Kafka -> Consumer -> TaskService (command)
-//    Controller -> TaskService (query) -> MongoDB
-
 public interface TaskService {
 
     // ── QUERY operations (Read) ──────────────────────────────
